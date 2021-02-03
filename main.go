@@ -40,6 +40,7 @@ var (
 	clearToolArgs = clearer.Flag("tool-args", "Extra arguments to pass to the --tool").Short('T').Default("").String()
 	clearAll      = clearer.Flag("all", "Remove all items").Short('a').Default("false").Bool()
 	clearEsc      = clearer.Flag("print0", "Separate items using NULL; recommended if your tool supports --read0 or similar").Default("false").Bool()
+	clearFilter   = clearer.Flag("filter", "Removes all items that match this value").Short('f').String()
 
 	_ = app.Command("restore", "Serve the last recorded item from history")
 )
@@ -99,8 +100,15 @@ func main() {
 			return
 		}
 
+		if *clearFilter != "" {
+			if err := write(filter(history, *clearFilter), histfile); err != nil {
+				smartLog(err.Error(), "normal", *alert)
+			}
+			return;
+		}
+
 		if *clearTool == "" {
-			fmt.Println("clipman: error: required flag --tool or --all not provided, try --help")
+			fmt.Println("clipman: error: required flag --tool, --filter, or --all not provided, try --help")
 			os.Exit(1)
 		}
 
